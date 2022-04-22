@@ -1,9 +1,9 @@
 const main = async () => {
-    const [deployer] = await Headers.ethers.getSigners();
+    const [deployer] = await hre.ethers.getSigners();
     const accountBalance = await deployer.getBalance();
 
     console.log("Deploying contracts with account: ", deployer.address);
-    console.log("Account balance: ", accountBalance.toString());
+    console.log("Account balance: ", ethers.utils.formatEther(accountBalance)); //Converts wei to ETH
 
     const coffeeContractFactory = await hre.ethers.getContractFactory("CoffeePortal");
     const coffeeContract = await coffeeContractFactory.deploy();

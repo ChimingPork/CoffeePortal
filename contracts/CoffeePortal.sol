@@ -9,7 +9,7 @@ contract CoffeePortal {
     uint256 totalDonuts;
 
     constructor() {
-        console.log("This is a smart contract");
+        console.log("Successfully deployed the smart contract");
     }
 
     function coffee() public {
