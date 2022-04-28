@@ -32,24 +32,49 @@ contract CoffeePortal {
     Coffee[] coffees;
     Donut[] donuts;
 
-    constructor() {
+    constructor() payable {
         console.log("Successfully deployed the smart contract");
     }
 
     function coffee(string memory _message) public {
         totalCoffees += 1;
-        console.log("%s has given a coffee!", msg.sender, _message); // wallet address of person who called function
+        console.log("%s has minted a coffee!", msg.sender, _message); // wallet address of person who called function
 
         // Here is where we store the coffee data in the array
         coffees.push(Coffee(msg.sender, _message, block.timestamp));
+        //emit the event so we can use it in our Dapp
         emit NewCoffee(msg.sender, block.timestamp, _message);
+
+        uint256 prizeAmount = 0.001 ether;
+        require(
+            prizeAmount <= address(this).balance,
+            "Trying to withdraw more money than the contract has."
+        );
+        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+        require(success, "Failed to withdraw money from contract.");
     }
 
     function donut(string memory _message) public {
         totalDonuts += 1;
-        console.log("%s has given a donut!", msg.sender); // wallet address of person who called function
+        console.log("%s has minted a donut!", msg.sender); // wallet address of person who called function
         donuts.push(Donut(msg.sender, _message, block.timestamp));
         emit NewDonut(msg.sender, block.timestamp, _message);
+
+        uint256 prizeAmount = 0.001 ether;
+        require(
+            prizeAmount <= address(this).balance,
+            "Trying to withdraw more money than the contract has."
+        );
+        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+        require(success, "Failed to withdraw money from contract.");
+    }
+
+    function getAllCoffees() public view returns (Coffee[] memory) {
+        return coffees;
+    }
+
+    function getAllDonuts() public view returns (Donut[] memory) {
+        return donuts;
     }
 
     function getTotalCoffees() public view returns (uint256) {

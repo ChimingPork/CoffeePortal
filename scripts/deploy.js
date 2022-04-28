@@ -1,12 +1,8 @@
 const main = async () => {
-    const [deployer] = await hre.ethers.getSigners();
-    const accountBalance = await deployer.getBalance();
-
-    console.log("Deploying contracts with account: ", deployer.address);
-    console.log("Account balance: ", ethers.utils.formatEther(accountBalance)); //Converts wei to ETH
-
     const coffeeContractFactory = await hre.ethers.getContractFactory("CoffeePortal");
-    const coffeeContract = await coffeeContractFactory.deploy();
+    const coffeeContract = await coffeeContractFactory.deploy({
+        value: hre.ethers.utils.parseEther("0.01"),
+    });
     await coffeeContract.deployed();
 
     console.log("CoffeePortal address: ", coffeeContract.address);

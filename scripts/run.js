@@ -1,40 +1,31 @@
 const main = async () => {
-    const [owner, randomPerson] = await hre.ethers.getSigners();
     const coffeeContractFactory = await hre.ethers.getContractFactory("CoffeePortal"); //Compile contract and generate files under artifacts
-    const coffeeContract = await coffeeContractFactory.deploy(); //Hardhat creates local ETH network for this contract. After script completes will destroy local network
+    const coffeeContract = await coffeeContractFactory.deploy({
+        value: hre.ethers.utils.parseEther("0.1"),
+    }); 
+    //Hardhat creates local ETH network for this contract. After script completes will destroy local network
     //This allows a fresh blockchain to be used everytime we run the contract
+    
     await coffeeContract.deployed(); //Wait until contract is actually deployed before running constructor
-
     console.log("Contract deployed to:", coffeeContract.address); //Once deployed, provide with address of contract so we can find on blockchain
-    console.log("Contract delpoyed by:", owner.address); // Will also provide address of who deployed it
 
-    //Manually call coffee functions
-    let coffeeCount;
-    coffeeCount = await coffeeContract.getTotalCoffees(); //Call function to count total coffees
+    //Get contract balance
+    let contractBalance = await hre.ethers.provider.getBalance(coffeeContract.address);
+    console.log("Contract Balance:", hre.ethers.utils.formatEther(contractBalance));
 
-    let coffeeTxn = await coffeeContract.coffee(); //Call function to do the coffee transaction and change the state variable
-    await coffeeTxn.wait();
+    let coffeeTxn = await coffeeContract.coffee("A Coffee!"); //Call function to do the coffee transaction and change the state variable
+    await coffeeTxn.wait(); // wait for transaction t be mined
 
-    coffeeCount = await coffeeContract.getTotalCoffees(); //Call function to count coffees again to see if it has changed
+    //Get Balance Again
+    contractBalance = await hre.ethers.provider.getBalance(coffeeContract.address);
+    console.log("Contract Balance:", hre.ethers.utils.formatEther(contractBalance));
 
-    coffeeTxn = await coffeeContract.connect(randomPerson).coffee(); //Simulate other people calling coffee function
-    await coffeeTxn.wait();
-
-    coffeeCount = await coffeeContract.getTotalCoffees();
-
-    //Manually call donut functions
-    let donutCount;
-    donutCount = await coffeeContract.getTotalDonuts(); 
-
-    let donutTxn = await coffeeContract.donut(); 
+    let donutTxn = await coffeeContract.donut("A Donut!"); 
     await donutTxn.wait();
-
-    donutCount = await coffeeContract.getTotalDonuts(); 
-
-    donutTxn = await coffeeContract.connect(randomPerson).donut(); 
-    await donutTxn.wait();
-
-    donutCount = await coffeeContract.getTotalDonuts();
+    
+    //Get Balance Again
+    contractBalance = await hre.ethers.provider.getBalance(coffeeContract.address);
+    console.log("Contract Balance:", hre.ethers.utils.formatEther(contractBalance));
 };
 
 const runMain = async () => {
@@ -48,3 +39,10 @@ const runMain = async () => {
 };
 
 runMain();
+
+/*
+When updating contract, remeber to do these things:
+1. We need to deploy it again.
+2. We need to update the contract address on our frontend.
+3. We need to update the abi file on our frontend. 
+*/
