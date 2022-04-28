@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 contract CoffeePortal {
     uint256 totalCoffees; //automatically initialized to 0, "state variable"
     uint256 totalDonuts;
+    uint256 private seed;
 
     /* Event is inheritable emember of contract. 
     Event is emitted and logs are stored on blockchain. Not accessible from within contract
@@ -32,41 +33,77 @@ contract CoffeePortal {
     Coffee[] coffees;
     Donut[] donuts;
 
+    //address => uint mapping meaning I can associate an address with a number, in this case last time we minted a Goodie
+    mapping(address => uint256) public lastMintGoodie;
     constructor() payable {
         console.log("Successfully deployed the smart contract");
+        seed = (block.timestamp + block.difficulty) % 100;
     }
 
     function coffee(string memory _message) public {
+        //Make sure there are at least 15 mins between mints
+        require(
+            lastMintGoodie[msg.sender] + 15 minutes < block.timestamp,
+            "Wait 15m"
+        );
+
+        //Update current user timestamp
+        lastMintGoodie[msg.sender] = block.timestamp;
+
         totalCoffees += 1;
         console.log("%s has minted a coffee!", msg.sender, _message); // wallet address of person who called function
 
         // Here is where we store the coffee data in the array
         coffees.push(Coffee(msg.sender, _message, block.timestamp));
         //emit the event so we can use it in our Dapp
-        emit NewCoffee(msg.sender, block.timestamp, _message);
 
-        uint256 prizeAmount = 0.001 ether;
-        require(
-            prizeAmount <= address(this).balance,
-            "Trying to withdraw more money than the contract has."
-        );
-        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
-        require(success, "Failed to withdraw money from contract.");
+        // Generate new seed for next user
+        seed = (block.difficulty + block.timestamp + seed) %100;
+        console.log("Random # generated: %d", seed);
+
+        //Give 50% chance to win prize
+        if (seed <= 50) {
+            console.log("%s won!", msg.sender);
+
+            uint256 prizeAmount = 0.001 ether;
+            require(
+                prizeAmount <= address(this).balance,
+                "Trying to withdraw more money than the contract has."
+            );
+            (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+            require(success, "Failed to withdraw money from contract.");
+        }
+    emit NewCoffee(msg.sender, block.timestamp, _message);
     }
 
     function donut(string memory _message) public {
+        
+        require(
+            lastMintGoodie[msg.sender] + 15 minutes < block.timestamp,
+            "Wait 15m"
+        );
+
+        lastMintGoodie[msg.sender] = block.timestamp;
+
         totalDonuts += 1;
         console.log("%s has minted a donut!", msg.sender); // wallet address of person who called function
         donuts.push(Donut(msg.sender, _message, block.timestamp));
-        emit NewDonut(msg.sender, block.timestamp, _message);
+        
+        seed = (block.difficulty + block.timestamp + seed) %100;
+        console.log("Random # generated: %d", seed);
 
-        uint256 prizeAmount = 0.001 ether;
-        require(
-            prizeAmount <= address(this).balance,
-            "Trying to withdraw more money than the contract has."
-        );
-        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
-        require(success, "Failed to withdraw money from contract.");
+        if (seed <= 50) {
+            console.log("%s won!", msg.sender);
+
+            uint256 prizeAmount = 0.001 ether;
+            require(
+                prizeAmount <= address(this).balance,
+                "Trying to withdraw more money than the contract has."
+            );
+            (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+            require(success, "Failed to withdraw money from contract.");
+        }
+        emit NewDonut(msg.sender, block.timestamp, _message);
     }
 
     function getAllCoffees() public view returns (Coffee[] memory) {
