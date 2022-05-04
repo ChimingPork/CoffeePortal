@@ -1,4 +1,4 @@
-# Basic Landing Page To Demonstrate Basic Blockchain Interaction
+# Landing Page To Demonstrate Basic Blockchain Interaction
 
 This project demonstrates some basic functionality of a smart contract. This contract has been deployed on the *Ethereum Rinkeby Testnet* and can be viewed on [etherscan](https://rinkeby.etherscan.io/address/0x7DaF02aC9006Ecdc3dA3a7011e7cE1F31AeD2508).
 
